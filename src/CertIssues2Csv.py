@@ -53,6 +53,7 @@ certExpiry_regexp = re.compile("(?<=-Not After :).+") # Pattern for the expiry d
 subjectExpiry_regexp = re.compile("((?<=-Subject : ).+)|((?<=-Subject   : ).+)") # Pattern to the certificate's subject value
 certName_regexp = re.compile("(?<=CN=).+") # Pattern for getting the CN value from the certificate
 
+#args = "..\Heckfield_Management_vv22gb.nessus"
 
 def untrustedCerts(args):
     certFindings = []
@@ -64,23 +65,37 @@ def untrustedCerts(args):
             if 'SSL Certificate Cannot Be Trusted' in item.get('pluginName'):
                 output = item.find('plugin_output').text
                 issue = issue_regexp.search(output)
-                subject_match = subjectExpiry_regexp.search(output).group(0)
+
+                #print(subject_match, name, item.get('port'))
                 if issue is not None:
-                    
+                    subject_match = subjectExpiry_regexp.search(output).group(0)
                     unknownCA_unsorted = (issue.group(0)).replace('\n',' ') # Get the matched text all on one line
                     unknownCA = unknownCA_unsorted.replace('signed', 'Signed') # Capitalise first word "signed" 
                     ca_issuer = CA_Issuer_regexp.search(output).group(0)
-                    certName = certName_regexp.search(subject_match).group(0)
-                    port = item.get('port')
-                    certFinding = {"Host": name, "Port": port, "Issue": unknownCA, "Reason": ca_issuer, "Certificate Name": certName }
-                    #print(certFinding)
-                    certFindings.append(certFinding)
+                    certName_regexp.search(subject_match)
+                    if certName_regexp.search(subject_match) is not None:
+                        certName = certName_regexp.search(subject_match).group(0)
+                        port = item.get('port')
+                        certFinding = {"Host": name, "Port": port, "Issue": unknownCA, "Reason": ca_issuer, "Certificate Name": certName }
+                        certFindings.append(certFinding)
+                    else:
+                        certName = subject_match
+                        port = item.get('port')
+                        certFinding = {"Host": name, "Port": port, "Issue": unknownCA, "Reason": ca_issuer, "Certificate Name": certName }
+                        certFindings.append(certFinding)
                 elif 'expired' in output:
+                    subject_match = subjectExpiry_regexp.search(output).group(0)
                     certExpiry = certExpiry_regexp.search(output).group(0)
-                    certName = certName_regexp.search(subject_match).group(0)
-                    certFinding = {"Host": name, "Port": port, "Issue": "Certificate expired", "Reason": certExpiry, "Certificate Name": certName }
-                    #print(certFinding)
-                    certFindings.append(certFinding)
+                    if certName_regexp.search(subject_match) is not None:
+                        certName = certName_regexp.search(subject_match).group(0)
+                        port = item.get('port')
+                        certFinding = {"Host": name, "Port": port, "Issue": "Certificate expired", "Reason": certExpiry, "Certificate Name": certName }
+                        certFindings.append(certFinding)
+                    else:
+                        certName = subject_match
+                        port = item.get('port')
+                        certFinding = {"Host": name, "Port": port, "Issue": "Certificate expired", "Reason": certExpiry, "Certificate Name": certName }
+                        certFindings.append(certFinding)
     return certFindings
 
 
