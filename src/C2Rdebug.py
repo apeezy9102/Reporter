@@ -35,7 +35,7 @@ def displayBanner():
 
 # Argument Parser 
 def c2rArgumentParser():
-    __desc__="Nessus SSL/ TLS Parsing Tool - DEBUG\r\nThis tool is not at 100%, double check everything with Nessus, please report all bugs to Phil"
+    __desc__="Nessus SSL/ TLS Parsing Tool - DEBUG\r\nThis tool is not at 100%, double check everything with Nessus."
     parser = ArgumentParser(
         formatter_class=RawDescriptionHelpFormatter,
         description=__desc__
